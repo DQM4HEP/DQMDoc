@@ -61,8 +61,8 @@ The code for a quality test requires only a single .cc file, which comprises fou
 
 Code should be written so as to catch common errors and throw an appropriate exception, especially for errors that may cause segmentation faults. This will help to avoid a qtest halting the execution of other qtests should an error occur. Errors are reported using the `report.m_message()` function, and the error message will appear in the summary of the qtest after execution.
 
-#### Constructor and destructor
-For the constructor and destructor, it is sufficient to copy existing code, changing the name of the qtest, and change the variables to be initialised in the qtest. The executable that runs qtests handles everything else. Care should be taken to initialise variables appropriately and to give the qtest a clelar and accurate description:
+### Constructor and destructor
+For the constructor and destructor, it is sufficient to copy existing code, changing the name of the qtest and the variables to be initialised. The executable that runs qtests handles everything else. Care should be taken to initialise variables appropriately and to give the qtest a clear and accurate description:
 
     ExampleTest::ExampleTest(const std::string &qname)
         : QualityTest("ExampleTest", qname),
@@ -72,7 +72,7 @@ For the constructor and destructor, it is sufficient to copy existing code, chan
       m_description = "A description of the test's functionality, as well as the meaning of the quality statistic it outputs.";
     }
 
-#### readSettings
+### readSettings
 The `readSettings` function initialises the variables of the qtest from the XML steering file which is loaded into memory via `xmlHandle`. This function should be used to read in information from the XML file and validate it to ensure the test can be run. Variables are read in using a combination of one of the `RETURN_RESULT` macros and the `XmlHelper`:
 
     RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::readParameter(xmlHandle, "PropertyName", m_property))`
@@ -87,7 +87,7 @@ In this case, the macro succeeds provided the expression returns either `STATUS_
 
 Variables should be checked to ensure that the qtest can be run and that the result is meaningful. While the `XmlHelper::readParameter` and similar functions can take an optional fourth argument for a validator delta function, users are encouraged to make code clear and readable by using if-else statements. This is especially important when checking against more complicated criteria.
 
-#### userRun
+### userRun
 The `userRun` function defines the process of the qtest itself, using the monitor element. The result must be a float between 0.0 and 1.0 that represents the "quality" or "goodness" of the test. The meaning of this quality statistic will vary depending on the qtest but will often take the form of a chi-squared or p-value. At absolute minimum, it should represent a pass-fail case, so that a passing qtest reports a quality of 1 and a failing qtest a quality of 0.
 
 The monitor element must first be cast to an appropriate class. This is best accomplished using the provided `objectTo` function. For example, if the expected monitor element is a TH1:
@@ -112,7 +112,7 @@ Once the code for a new qtest is complete, it must be compiled and tested. To ma
     cmake ..
     make install
 
-#### Unit testing
+### Unit testing
 If you intend to contribute your new qtest to the DQM4HEP repositories on Github, it must also have a unit test. Examples can be found in `dqm4hep-core/source/tests/`. A unit test should test both valid tests as well as common failure modes, such as:
 
 - Valid test with incorrect parameters
