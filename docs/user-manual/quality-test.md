@@ -4,15 +4,17 @@ A quality test (or 'qtest') is a piece of code that operates on a monitor elemen
 Quality tests are an important part of the framework, allowing users and shifters to quickly identify statistical properties or features in data that may not be obvious "by eye", improving their ability to identify any issues or anomalies with data-taking or the device under test.
 
 DQM4HEP comes with several quality tests ready to use and users may implement their own. Included quality tests are:
-* Property within range (`PropertyWithinExpectedTest`) – this obtains one of: the mean, mean90, RMS, RMS90, or median of either a histogram or graph, and checks the result against user-defined criteria. This criteria can be either a range, above a threshold, or below a threshold.
-* Exact reference comparison (`ExactRefCompareTest`) – this compares a histogram or graph directly with a user-defined reference, looking for an exact match.
-* Fit parameter within range (`FitParamInRangeTest`) – this plots a user-defined function onto a histogram or graph, obtains one of the parameters of the function, and checks that the result falls within a user-defined range.
+
+- Property within range (`PropertyWithinExpectedTest`) – this obtains one of: the mean, mean90, RMS, RMS90, or median of either a histogram or graph, and checks the result against user-defined criteria. This criteria can be either a range, above a threshold, or below a threshold.
+- Exact reference comparison (`ExactRefCompareTest`) – this compares a histogram or graph directly with a user-defined reference, looking for an exact match.
+- Fit parameter within range (`FitParamInRangeTest`) – this plots a user-defined function onto a histogram or graph, obtains one of the parameters of the function, and checks that the result falls within a user-defined range.
 
 The following quality tests are planned but not yet implemented as of 2018-06-06:
-* Fitted chi-squared within range
-* Likelihood fit
-* Kolmogorov-Smirnov test
-* Scalar distance between values
+
+- Fitted chi-squared within range
+- Likelihood fit
+- Kolmogorov-Smirnov test
+- Scalar distance between values
 
 ## Running a quality test
 Quality tests can be run using the `dqm4hep-run-qtests` executable, found in `dqm4hep-core/bin/`. The only required input for this executable is an XML steering file, which defines the quality tests to perform, their parameters, and which monitor elements to test. An example of running is:
@@ -112,8 +114,9 @@ Once the code for a new qtest is complete, it must be compiled and tested. To ma
 
 #### Unit testing
 If you intend to contribute your new qtest to the DQM4HEP repositories on Github, it must also have a unit test. Examples can be found in `dqm4hep-core/source/tests/`. A unit test should test both valid tests as well as common failure modes, such as:
-* Valid test with incorrect parameters
-* Not enough parameters in steering file
-* Empty monitor element
-* Incorrect monitor element type
+
+- Valid test with incorrect parameters
+- Not enough parameters in steering file
+- Empty monitor element
+- Incorrect monitor element type
 
