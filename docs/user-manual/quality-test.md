@@ -1,13 +1,9 @@
-[TODO: Go into more detail about the arguments in the running section and include examples of output.]
-
-[TODO: Include an entire qtest file and go through it section by section in the writing section]
-
 # Quality Tests
 A quality test (or 'qtest') is a piece of code that operates on a monitor element to check the data's "quality" or "goodness" against some criteria. E.g. comparing the mean of a histogram to an expected value, or comparing spectra to a reference produced using Monte Carlo methods.
 
 Quality tests are an important part of the framework, allowing users and shifters to quickly identify properties or features in data that may not be obvious "by eye", improving their ability to identify any issues or anomalies with data-taking or the device under test.
 
-DQM4HEP comes with several quality tests ready to use, detailed below. Users may also implement their own (see [section](section), below).
+DQM4HEP comes with several quality tests ready to use, detailed below. Users may also implement their own (see [here](#writing-quality-tests) for more information).
 
 ### PropertyWithinExpectedTest
 This test takes a monitor element and determines one of the following properties:
@@ -44,7 +40,7 @@ This takes a monitor element and an attached reference, and compares them to see
 <qtest type="ExactRefComparTest" name="MyExactRefTest"/>
 ```
 
-This test has no parameters. The reference is defined in the `<monitorElement>` section of the XML file, explained [here](here).
+This test has no parameters. The reference is defined in the `<monitorElement>` section of the XML file, explained [here](#steering-files).
 
 ### FitParamInRangeTest
 This takes a monitor element and plots a user-defined function onto it, then gets one of the parameters of the function and checks whether it falls within a user-defined range. 
@@ -81,7 +77,7 @@ Here is an example definition of a Chi2Test in XML:
 </qtest>
 ```
 
-The optional argument `ComparisonType` determines the comparison type, based on whether the histograms are weighted or unweighted (see [here](here) for more information). This may be either `UU`, `UW`, `WW`, or `NORM`. By default, this is `UU`. The optional arguments `UseUnderflow` and  `UseOverflow` control whether the overflow and underflow bins are used to calculate the chi-squared. These may be either `false` or `true`. By default, both of these are `false`.
+The optional argument `ComparisonType` determines the comparison type, based on whether the histograms are weighted or unweighted (see [the ROOT documentation](https://root.cern.ch/doc/master/classTH1.html#a6c281eebc0c0a848e7a0d620425090a5) for more information). This may be either `UU`, `UW`, `WW`, or `NORM`. By default, this is `UU`. The optional arguments `UseUnderflow` and  `UseOverflow` control whether the overflow and underflow bins are used to calculate the chi-squared. These may be either `false` or `true`. By default, both of these are `false`.
 
 ## Running a quality test
 Quality tests can be run using the `dqm4hep-run-qtests` executable, found in `dqm4hep-core/bin/`. The only required input for this executable is an XML steering file, which defines the quality tests to perform, their parameters, and which monitor elements to test. An example of running is:
@@ -97,7 +93,7 @@ Steering files use XML to store all the information needed to execute a qtest. A
 
 There are two main sections: the `<qtests>` block and the `<monitorElements>` block, both of which must be within  the `<dqm4hep>` XML tag.
 
-The `<qtests>` block defines the qtests to execute along with their settings or parameters, without reference to what they will be run on. The structure and parameters of these is highly dependent upon the qtest being used -- see the section for each qtest [above](above).
+The `<qtests>` block defines the qtests to execute along with their settings or parameters, without reference to what they will be run on. The structure and parameters of these is highly dependent upon the qtest being used -- see the section for each qtest [above](#quality-tests).
 
 The `<monitorElements>` block opens a file using the `<file>` tag, within which each monitor element is opened with `<fileElement>`. Inside this tag, all of the qtests to execute on this monitor element are given.
 
@@ -117,7 +113,7 @@ The `<monitorElements>` block opens a file using the `<file>` tag, within which 
 [[An explanation of how to include references]]
 
 ## Writing quality tests
-Users can create their own quality tests if the included tests do not satisfy their requirements. Quality tests are a type of plugin -- see [here](here) for how to write and compile plugins.
+Users can create their own quality tests if the included tests do not satisfy their requirements. Quality tests are a type of plugin -- see [here](plugin-system.md) for more information on plugins, including how to write and compile them.
 
 The code for the built-in quality tests can be found in `dqm4hep-core/source/src/plugins/` and can be used as references or templates. Files for quality tests should be given a descriptive name in CamelCase, and end with 'Test', e.g. `ExactRefCompareTest.cc`.
 
@@ -151,7 +147,7 @@ Note that the above example will fail if the parameter is not present in the XML
     RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::readParameter(xmlHandle, "PropertyName", m_property))`
 ```
 
-For more information on status codes and pre-processor macros, see [section](section). For more information on XML parsing with XmlHelper, see [section](section).
+For more information on status codes, pre-processor macros, and XML parsing with XmlHelper, see the [core tools section](core-tools.md).
 
 Parameters should be checked to make sure that the qtest can be run and that the result is meaningful. While `XmlHelper::readParameter` and similar functions can take an optional fourth argument for a validator delta function, users should make code clear and readable by using `if-else` statements. This is especially important when checking against more complicated criteria.
 
@@ -176,6 +172,6 @@ if (nullptr == pMonitorElement->objectTo<TH1>())
 }
 ```
 
-For the meaning of these status codes, see [section](section).
+The meaning of these status codes is documented under *Status codes and useful preprocessor macros* in the [core tools section](core-tools.md).
 
 Once the quality statistic of the test is known, it is output using `report.m_quality`. Any other information can be output using `report.m_message` – this is useful for including comments on the result.
