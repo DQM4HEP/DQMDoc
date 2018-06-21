@@ -5,6 +5,14 @@ Quality tests are an important part of the framework, allowing users and shifter
 
 DQM4HEP comes with several quality tests ready to use, detailed below. Users may also implement their own (see [here](#writing-quality-tests) for more information).
 
+| Quality test | ROOT Objects | Required parameters | Optional parameters |
+|---|---|---|---|
+| [PropertyWithinExpectedTest](#propertywithinexpectedtest) | TH1,<br>TGraph | Property,<br>Method,<br>&ensp;plus others (see below) | |
+| [ExactRefCompareTest](#exactrefcomparetest)  | TH1,<br>TGraph,<br>TGraph2D | None | CompareUnderflow,<br>CompareOverflow |
+| [FitParamInRangeTest](#fitparaminrangetest) | TH1,<br>TGraph,<br>TGraph2D | FitFormula, TestParameter, DeviationLower, DeviationUpper | GuessParameters,<br>FunctionRange, UseLogLikelihood, UsePearsonChi2, ImproveFitResult |
+| [KolmogorovTest](#kolmogorovtest) | TH1,<br>TGraph | None | UseUnderflow,<br>UseOverflow |
+| [Chi2Test](#chi2test) | TH1 | None | ComparisonType, UseUnderflow,<br>UseOverflow |
+
 ### PropertyWithinExpectedTest
 This test takes a monitor element and determines one of the following properties:
 
@@ -37,13 +45,29 @@ The required parameter `Property` determines which property of the object to cal
 This takes a monitor element and an attached reference, and compares them to see if they are an exact match. These objects can be either TH1s, TGraphs, or TGraph2Ds, but both the object and it's reference must be of the same type. The result is 1 if the two objects are exactly identical, 0 otherwise.
 
 ```xml
-<qtest type="ExactRefComparTest" name="MyExactRefTest"/>
+<qtest type="ExactRefCompareTest" name="MyExactRefTest"/>
 ```
 
 This test has no parameters. The reference is defined in the `<monitorElement>` section of the XML file, explained [here](#steering-files).
 
 ### FitParamInRangeTest
 This takes a monitor element and plots a user-defined function onto it, then gets one of the parameters of the function and checks whether it falls within a user-defined range. 
+
+```xml
+<qtest type="FitParamInRangeTest" name="MyFitParamTest"/>
+  <parameter name ="FitFormula"> gaus(0) </>
+  <parameter name ="GuessParameters" value=""/>
+  <parameter name ="TestParameter" value="1"/>
+  <parameter name ="DeviationLower" value="-0.5"/>
+  <parameter name ="DeviationUpper" value="0.5"/>
+  <parameter name ="FunctionRange" value=""/>
+  <parameter name ="UseLogLikelihood" value="false"/>
+  <parameter name ="UsePearsonChi2" value="false"/>
+  <parameter name ="ImproveFitResult" value="false"/>
+</qtest>
+```
+
+The required parameter `FitFormula` defines the formula used for the fit. This must be [...]. The optional argument `UsePearsonChi2` [...]
 
 [...]
 
@@ -62,7 +86,7 @@ This test takes a monitor element and an attached reference, and performs the Ko
 </qtest>
 ```
 
-The optional arguments `UseUnderflow` and  `UseOverflow` control whether the overflow and underflow bins are used to calculate the chi-squared. These may be either `false` or `true`. By default, both of these are `false`. 
+The optional arguments `UseUnderflow` and  `UseOverflow` control whether the overflow and underflow bins are used to calculate the chi-squared. These may be either `false <string>` or `true`. By default, both of these are `false`. 
 
 ### Chi2Test
 This test takes a monitor element and an attached reference, and performs the Pearson chi-squared test on the two objects. Both objects must be TH1s. The result is the p-value output by the chi-squared test. This is analogous to the Kolmorogov-Smirnov test (above), but is designed for binned data in histograms.
@@ -77,25 +101,97 @@ Here is an example definition of a Chi2Test in XML:
 </qtest>
 ```
 
-The optional argument `ComparisonType` determines the comparison type, based on whether the histograms are weighted or unweighted (see [the ROOT documentation](https://root.cern.ch/doc/master/classTH1.html#a6c281eebc0c0a848e7a0d620425090a5) for more information). This may be either `UU`, `UW`, `WW`, or `NORM`. By default, this is `UU`. The optional arguments `UseUnderflow` and  `UseOverflow` control whether the overflow and underflow bins are used to calculate the chi-squared. These may be either `false` or `true`. By default, both of these are `false`.
+The optional argument `ComparisonType` determines the comparison type, based on whether the histograms are weighted or unweighted (see [the ROOT documentation](https://root.cern.ch/doc/master/classTH1.html#a6c281eebc0c0a848e7a0d620425090a5) for more information). This may be either `UU`, `UW`, `WW`, or `NORM`. By default, this is `UU`. The optional arguments `UseUnderflow` and  `UseOverflow` control whether the overflow and underflow bins are used to calculate the chi-squared. These may be either `false <string>` or `true`. By default, both of these are `false`.
 
 ## Running a quality test
-Quality tests can be run using the `dqm4hep-run-qtests` executable, found in `dqm4hep-core/bin/`. The only required input for this executable is an XML steering file, which defines the quality tests to perform, their parameters, and which monitor elements to test. An example of running is:
+Quality tests can be run using the `dqm4hep-run-qtests` executable, found in `dqm4hep-core/bin/`. This executable handles the running of the actual binaries for each qtest, as well as obtaining monitor elements from the ROOT file and the setting of parameters. This executable has one required arguments and several optional ones, detailed below. 
+
+###Arguments
 
 ```bash
-dqm4hep-run-qtests -i steeringFile.xml
+-h
+--help
 ```
 
-As with all DQM4HEP executables, running with the `--help` argument shows the possible arguments with their meanings and usage. An example steering file that runs some default quality tests can be found within `dqm4hep-core/tests/test_samples.xml`.
+Displays usage information, then exits.
+
+```bash
+-i <string>
+--input-qtest-file <string>
+```
+
+(Required) Gives the path to the XML steering file that defines what quality tests to run, their parameters, and what monitor elements to run them on. See the [section below](#steering-files) for more information on these steering files.
+
+```bash
+-c
+--compress-json
+```
+
+Turns on compression for the JSON qtest report output file. Off by default.
+
+```bash
+-w
+--write-monitor-elements
+```
+
+Turns on writing of monitor elements in the qtest report. Off by default.
+
+```bash
+-p <string>
+--print-only <string>
+```
+
+Prints only the quality reports of the given flag. Options are undefined, invalid, insuf_stat, success, warning, and error.
+
+```bash
+-e <string>
+--exit-on <string>
+```
+
+Forces the program to exit if any qtest results in the given code. or greater. Options are `ignore`, `failure`, `warning`, and `error`. This is `failure` by default.
+
+```bash
+-v <string>
+--verbosity <string>
+```
+
+The verbosity of the logger. Options are `trace`, `debug`, `info`, `warning`, `error`, `critical`, and `off`. This is `warning` by default [?].
+
+```bash
+-q <string>
+--qreport-file <string>
+```
+
+Gives the path of the qtest report output file (in JSON) format.
+
+```bash
+-o <string>
+--root-output <string>
+```
+
+Gives the path of a ROOT output file to save the processed mmonitor elements.
+
+```bash
+--
+--ignore_rest
+```
+
+Ignores any arguments following this flag.
+
+```bash
+--version
+```
+
+Displays version information, then exits.
 
 ### Steering files
 Steering files use XML to store all the information needed to execute a qtest. An example steering file can be found in `dqm4hep-core/tests/test_samples.xml`.
 
 There are two main sections: the `<qtests>` block and the `<monitorElements>` block, both of which must be within  the `<dqm4hep>` XML tag.
 
-The `<qtests>` block defines the qtests to execute along with their settings or parameters, without reference to what they will be run on. The structure and parameters of these is highly dependent upon the qtest being used -- see the section for each qtest [above](#quality-tests).
+The `<qtests>` block defines the qtests to execute along with their settings or parameters, without reference to what they will be run on. The structure and parameters of these is highly dependent upon the qtest being used – see the section for each qtest [above](#quality-tests).
 
-The `<monitorElements>` block opens a file using the `<file>` tag, within which each monitor element is opened with `<fileElement>`. Inside this tag, all of the qtests to execute on this monitor element are given.
+The `<monitorElements>` block opens a file using the `<file>` tag, within which each monitor element is opened with `<fileElement>`. Inside this tag, all of the qtests to execute on this monitor element are given. In this example below, the qtests `ExampleTest1` and `ExampleTest2` are both performed on the monitor element `TestHistogram`:
 
 ```xml
 <monitorElements>
@@ -110,10 +206,37 @@ The `<monitorElements>` block opens a file using the `<file>` tag, within which 
 </monitorElements>
 ```
 
-[[An explanation of how to include references]]
+Some kinds of qtests require reference objects to compare against, which must be declared in the `<references>` block. References have a `name` parameter which gives the path to the file used as a reference, and an `id` which is a short tag for referring to them later in the XML file. For example:
+
+```xml
+<references>
+  <file id="mc-ref" name="montecarlo_reference_samples.root"/>
+  <file id="ex-ref" name="experiment_reference_samples.root"/>
+</references>
+```
+
+When a qtest that requires a reference is declared, the reference is given within the `<fileElement>` tag:
+
+```xml
+<fileElement path="\TestDirectory" name="TestHistogram">
+  <reference id="MyReference"/>
+  <qtest name="ExampleTest1"/>
+</fileElement>
+```
+
+This performs the qtest `ExampleTest1` on the monitor element `TestHistogram`, looking for another ROOT object of the same name within the file `MyReference` points to. It is also possible to use a specific object in a file as the reference:
+
+```xml
+<fileElement path="\TestDirectory" name="TestHistogram">
+  <reference id="MyReference" path="/path/to/the/reference/file" name="ReferenceHistogram"/>
+  <qtest name="ExampleTest2"/>
+</fileElement>
+```
+
+In this case, this performs `ExampleTest2` on the monitor element `TestHistogram`, using the object `ReferenceHistogram` as the reference. 
 
 ## Writing quality tests
-Users can create their own quality tests if the included tests do not satisfy their requirements. Quality tests are a type of plugin -- see [here](plugin-system.md) for more information on plugins, including how to write and compile them.
+Users can create their own quality tests if the included tests do not satisfy their requirements. Quality tests are a type of plugin – see [here](plugin-system.md) for more information on plugins, including how to write and compile them.
 
 The code for the built-in quality tests can be found in `dqm4hep-core/source/src/plugins/` and can be used as references or templates. Files for quality tests should be given a descriptive name in CamelCase, and end with 'Test', e.g. `ExactRefCompareTest.cc`.
 
@@ -138,13 +261,13 @@ ExampleTest::ExampleTest(const std::string &qname)
 The `readSettings` function initialises the variables of the qtest from the XML steering file, which is loaded into memory via `xmlHandle`. This function should be used to read in information from the XML file and validate it to make sure the test can be run. Variables are read in using a combination of pre-processor macros and XmlHelper. For example:
 
 ```cpp
-RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::readParameter(xmlHandle, "PropertyName", m_property))`
+RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::readParameter(xmlHandle, "PropertyName", m_property)) <string>`
 ```
 
 Note that the above example will fail if the parameter is not present in the XML file, so should only be used for parameters that are required. If a parameter is optional, use the `RETURN_RESULT_IF_AND_IF` macro instead. This allows the parameter to be returned if it is found, or does nothing if it is not. For example:
 
 ```cpp
-    RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::readParameter(xmlHandle, "PropertyName", m_property))`
+    RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::readParameter(xmlHandle, "PropertyName", m_property)) <string>`
 ```
 
 For more information on status codes, pre-processor macros, and XML parsing with XmlHelper, see the [core tools section](core-tools.md).
