@@ -8,7 +8,7 @@ DQM4HEP comes with several quality tests ready to use, detailed below. Users may
 | Quality test | ROOT Objects | Required parameters | Optional parameters |
 |---|---|---|---|
 | [PropertyWithinExpectedTest](#propertywithinexpectedtest) | TH1,<br>TGraph | Property,<br>Method,<br>&ensp;plus others (see below) | |
-| [ExactRefCompareTest](#exactrefcomparetest)  | TH1,<br>TGraph,<br>TGraph2D | None | CompareUnderflow,<br>CompareOverflow |
+| [ExactRefCompareTest](#exactrefcomparetest)  | Any TObject | None | CompareUnderflow,<br>CompareOverflow |
 | [FitParamInRangeTest](#fitparaminrangetest) | TH1,<br>TGraph,<br>TGraph2D | FitFormula, TestParameter, DeviationLower, DeviationUpper | GuessParameters,<br>FunctionRange, UseLogLikelihood, UsePearsonChi2, ImproveFitResult |
 | [KolmogorovTest](#kolmogorovtest) | TH1,<br>TGraph | None | UseUnderflow,<br>UseOverflow |
 | [Chi2Test](#chi2test) | TH1 | None | ComparisonType, UseUnderflow,<br>UseOverflow |
@@ -42,7 +42,7 @@ The result depends on the comparison type. For a range, the result is a p-value 
 The required parameter `Property` determines which property of the object to calculate. Possible properties are: `Mean`, `Mean90`, `RMS`, `RMS90`, and `Median`. The other three arguments determine the expected value of the property, and the lower and upper bounds, and must be numbers. Which arguments are required depends on the type of test being done. If doing a *within range* test, all three are required. If doing an *above threshold* test, only `DeviationLower` is required. If doing a *below threshold* test, only `DeviationUpper` is required. 
 
 ### ExactRefCompareTest
-This takes a monitor element and an attached reference, and compares them to see if they are an exact match. These objects can be either TH1s, TGraphs, or TGraph2Ds, but both the object and it's reference must be of the same type. The result is 1 if the two objects are exactly identical, 0 otherwise.
+This takes a monitor element and an attached reference, and compares them to see if they are an exact match. These objects may be any TObject, but both the object and it's reference must be of the same type. The result is 1 if the two objects are exactly identical, 0 otherwise.
 
 ```xml
 <qtest type="ExactRefCompareTest" name="MyExactRefTest"/>
@@ -86,7 +86,7 @@ This test takes a monitor element and an attached reference, and performs the Ko
 </qtest>
 ```
 
-The optional arguments `UseUnderflow` and  `UseOverflow` control whether the overflow and underflow bins are used to calculate the chi-squared. These may be either `false <string>` or `true`. By default, both of these are `false`. 
+The optional arguments `UseUnderflow` and  `UseOverflow` control whether the overflow and underflow bins are used to calculate the chi-squared. These may be either `false <string>` or `true`. By default, both of these are `false`. The reference is defined in the `<monitorElement>` section of the XML file, explained [here](#steering-files). 
 
 ### Chi2Test
 This test takes a monitor element and an attached reference, and performs the Pearson chi-squared test on the two objects. Both objects must be TH1s. The result is the p-value output by the chi-squared test. This is analogous to the Kolmorogov-Smirnov test (above), but is designed for binned data in histograms.
@@ -101,7 +101,7 @@ Here is an example definition of a Chi2Test in XML:
 </qtest>
 ```
 
-The optional argument `ComparisonType` determines the comparison type, based on whether the histograms are weighted or unweighted (see [the ROOT documentation](https://root.cern.ch/doc/master/classTH1.html#a6c281eebc0c0a848e7a0d620425090a5) for more information). This may be either `UU`, `UW`, `WW`, or `NORM`. By default, this is `UU`. The optional arguments `UseUnderflow` and  `UseOverflow` control whether the overflow and underflow bins are used to calculate the chi-squared. These may be either `false <string>` or `true`. By default, both of these are `false`.
+The optional argument `ComparisonType` determines the comparison type, based on whether the histograms are weighted or unweighted (see [the ROOT documentation](https://root.cern.ch/doc/master/classTH1.html#a6c281eebc0c0a848e7a0d620425090a5) for more information). This may be either `UU`, `UW`, `WW`, or `NORM`. By default, this is `UU`. The optional arguments `UseUnderflow` and  `UseOverflow` control whether the overflow and underflow bins are used to calculate the chi-squared. These may be either `false <string>` or `true`. By default, both of these are `false`. The reference is defined in the `<monitorElement>` section of the XML file, explained [here](#steering-files).
 
 ## Running a quality test
 Quality tests can be run using the `dqm4hep-run-qtests` executable, found in `dqm4hep-core/bin/`. This executable handles the running of the actual binaries for each qtest, as well as obtaining monitor elements from the ROOT file and the setting of parameters. This executable has one required arguments and several optional ones, detailed below. 
